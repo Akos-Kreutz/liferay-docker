@@ -2,9 +2,15 @@ FROM liferay/dxp:7.4.13-u45-d5.0.1-20221006125539
 
 USER 0
 
-RUN curl -H 'accept: */*' -L -s -X 'GET' -o /tmp/zabbix_agent.deb https://repo.zabbix.com/zabbix/6.3/ubuntu/pool/main/z/zabbix-release/zabbix-release_6.3-1%2Bubuntu22.04_all.deb && \
-	dpkg -i /tmp/zabbix_agent.deb && \
-	rm -fr /tmp/zabbix_agent.deb && \
+RUN set -x && \
+  curl -Ls -o /tmp/zabbix_agent_repo.deb \
+    https://repo.zabbix.com/zabbix/6.3/ubuntu/pool/main/z/zabbix-release/zabbix-release_6.3-1%2Bubuntu22.04_all.deb && \
+  curl -Ls -o /tmp/zabbix_agent_repo-arm64.deb \
+    https://repo.zabbix.com/zabbix/6.3/ubuntu-arm64/pool/main/z/zabbix-release/zabbix-release_6.3-1%2Bubuntu22.04_all.deb && \
+	dpkg -i /tmp/zabbix_agent_repo.deb && \
+	dpkg -i /tmp/zabbix_agent_repo-arm64.deb && \
+	rm -rf /tmp/zabbix_agent_repo.deb /tmp/zabbix_agent_repo-arm64.deb && \
+  \
 	apt-get update && \
 	apt-get --yes install mariadb-client zabbix-agent2 && \
 	apt-get upgrade --yes && \
