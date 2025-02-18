@@ -1,14 +1,14 @@
 FROM --platform=${TARGETPLATFORM} liferay/base:latest
 
+RUN mkdir /build
+
 # Common
 RUN apt-get update && \
-	DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install --yes build-essential
-
-RUN	mkdir /build
+DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install --no-install-recommends --yes build-essential ca-certificates curl libfreetype6-dev libjpeg-dev liblzma-dev libpng-dev libtiff-dev pkg-config zlib1g-dev
 
 # Ffmpeg
 RUN apt-get update && \
-	DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install --yes yasm pkg-config libx264-dev libx265-dev libvpx-dev libopus-dev libvorbis-dev libtheora-dev libfaac-dev libmp3lame-dev libass-dev libfreetype6-dev libsdl2-dev
+	DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install --yes yasm libx264-dev libx265-dev libvpx-dev libopus-dev libvorbis-dev libtheora-dev libfaac-dev libmp3lame-dev libass-dev libsdl2-dev
 
 RUN curl -L -o /build/ffmpeg.tar.gz https://ffmpeg.org/releases/ffmpeg-7.1.tar.gz && \
 	cd /build && \
@@ -23,19 +23,50 @@ RUN curl -L -o /build/ffmpeg.tar.gz https://ffmpeg.org/releases/ffmpeg-7.1.tar.g
 
 # Ghostscript
 RUN apt-get update && \
-	DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install --yes libpng-dev libjpeg-dev libtiff-dev zlib1g-dev libfreetype6-dev libcups2-dev libxext-dev libx11-dev libfontconfig1-dev
+DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install --no-install-recommends --yes libcups2-dev
 
 RUN curl -L -o /build/ghostscript.tar.gz https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs10040/ghostscript-10.04.0.tar.gz && \
-	cd /build && \
-	tar -xvzf ghostscript.tar.gz && \
-	cd ghostscript-* && \
-	./configure --prefix=/usr/local && \
-	make -j$(nproc) && \
-	make install && \
-	rm -rf /build/*
+    cd /build && \
+    tar -xvzf ghostscript.tar.gz && \
+    cd ghostscript-* && \
+    ./configure --prefix=/usr/local && \
+    make && \
+    make install && \
+    rm -rf /build/*
 
+# Libheif
 RUN apt-get update && \
-	DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install --no-install-recommends --yes bc ffmpeg file fonts-dejavu google-perftools imagemagick gifsicle libtcnative-1 && \
+DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install --no-install-recommends --yes cmake libde265-dev ninja-build x265
+
+RUN mkdir -p /build && \
+    curl -L -o /build/libheif.tar.gz https://github.com/strukturag/libheif/releases/download/v1.19.5/libheif-1.19.5.tar.gz && \
+    cd /build && \
+    tar -xvzf libheif.tar.gz && \
+    cd libheif-* && \
+    mkdir build && \
+    cd build && \
+    cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local -G Ninja && \
+    ninja && \
+    ninja install && \
+    ldconfig /usr/local/lib && \
+    rm -rf /build/*
+
+# ImageMagick
+RUN apt-get update && \
+DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install --no-install-recommends --yes libgif-dev libltdl-dev libwebp-dev libx11-dev libxext-dev libxml2-dev
+
+RUN curl -L -o /build/ImageMagick.tar.gz https://download.imagemagick.org/ImageMagick/download/releases/ImageMagick-7.1.1-43.tar.gz && \
+    cd /build && \
+    tar -xvzf ImageMagick.tar.gz && \
+    cd ImageMagick-* && \
+    ./configure --prefix=/usr/local && \
+    make && \
+    make install && \
+    ldconfig /usr/local/lib && \
+    rm -rf /build/*
+	
+RUN apt-get update && \
+	DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install --no-install-recommends --yes bc file fonts-dejavu google-perftools gifsicle libtcnative-1 && \
 	apt-get upgrade --yes && \
 	apt-get clean
 
