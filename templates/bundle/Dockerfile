@@ -3,7 +3,6 @@ FROM --platform=${TARGETPLATFORM} liferay/jdk21:latest AS liferay-jdk21
 COPY resources/etc/created-date /etc/created-date
 
 # Ghostscript
-
 COPY --from=liferay/bundle-builder /usr/local/bin/gs /usr/bin/gs
 COPY --from=liferay/bundle-builder /usr/local/share/ghostscript /usr/share/ghostscript
 COPY --from=liferay/bundle-builder /usr/local/lib/libgs*  /usr/lib/
@@ -15,9 +14,22 @@ RUN apt-get update && \
 
 RUN ln -s /usr/bin/gs /usr/bin/ghostscript
 
+# Ffmpeg
+COPY --from=liferay/bundle-builder /usr/local/bin/ffmpeg /usr/bin/ffmpeg
+COPY --from=liferay/bundle-builder /usr/local/bin/ffplay /usr/bin/ffplay
+COPY --from=liferay/bundle-builder /usr/local/bin/ffmpeg /usr/bin/ffprobe
+COPY --from=liferay/bundle-builder /usr/local/lib/libav* /usr/lib/
+COPY --from=liferay/bundle-builder /usr/local/lib/libpostproc* /usr/lib/
+COPY --from=liferay/bundle-builder /usr/local/lib/libswresample* /usr/lib/
+COPY --from=liferay/bundle-builder /usr/local/lib/libswscale* /usr/lib/
 
 RUN apt-get update && \
-	DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install --no-install-recommends --yes bc ffmpeg file fonts-dejavu google-perftools imagemagick gifsicle libtcnative-1 && \
+	DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install --no-install-recommends --yes libdrm2 libsdl2-2.0-0 libsndio7.0 libxv1 libass9 libvpx9 libtheora0 libx264-164 libx265-209 && \
+	apt-get upgrade --yes && \
+	apt-get clean
+
+RUN apt-get update && \
+	DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install --no-install-recommends --yes bc file fonts-dejavu google-perftools imagemagick gifsicle libtcnative-1 && \
 	apt-get upgrade --yes && \
 	apt-get clean
 
