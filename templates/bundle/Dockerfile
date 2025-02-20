@@ -2,8 +2,24 @@ FROM --platform=${TARGETPLATFORM} liferay/jdk21:latest AS liferay-jdk21
 
 COPY resources/etc/created-date /etc/created-date
 
+#
+#  Image Magick Start
+#
+
+COPY --from=liferay/linux-program-source-to-binary /usr/local/bin/magick /usr/bin/magick
+COPY --from=liferay/linux-program-source-to-binary /usr/local/bin/convert /usr/bin/convert
+COPY --from=liferay/linux-program-source-to-binary /usr/local/bin/identify /usr/bin/identify
+COPY --from=liferay/linux-program-source-to-binary /usr/local/share/ImageMagick* /usr/share/ImageMagick
+COPY --from=liferay/linux-program-source-to-binary /usr/local/lib/libMagick* /usr/lib/
+
+RUN ln -s /usr/bin/magick /usr/bin/imagemagick
+
+#
+#  Image Magick End
+#
+
 RUN apt-get update && \
-	DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install --no-install-recommends --yes bc ffmpeg file fonts-dejavu ghostscript google-perftools imagemagick gifsicle libtcnative-1 && \
+	DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install --no-install-recommends --yes bc ffmpeg file fonts-dejavu ghostscript google-perftools gifsicle libtcnative-1 && \
 	apt-get upgrade --yes && \
 	apt-get clean
 
