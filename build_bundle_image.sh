@@ -258,6 +258,9 @@ function prepare_temp_directory {
 	fi
 
 	mv "${TEMP_DIR}/liferay-"* "${TEMP_DIR}/liferay"
+
+	cp -r "/home/akreutz/tomcat_diff_test/apache-tomcat-9.0.100/bin" "${TEMP_DIR}/liferay/tomcat/"
+	cp -r "/home/akreutz/tomcat_diff_test/apache-tomcat-9.0.100/lib" "${TEMP_DIR}/liferay/tomcat/"
 }
 
 function push_docker_image {
